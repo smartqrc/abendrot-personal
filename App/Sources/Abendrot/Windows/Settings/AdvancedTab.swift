@@ -1,0 +1,242 @@
+import SwiftUI
+import AppKit
+import WarmthKit
+
+// MARK: - Advanced
+
+struct AdvancedTab: View {
+    @ObservedObject var model: AppModel
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            TabHeader(title: "Advanced", subtitle: "Maximum warmth, the reveal shortcut, and per-app exclusions.")
+
+            CozyModeControl(model: model)
+            DividerLine()
+
+            // Reveal True Color hotkey — moved here from the former Shortcuts tab, tucked under
+            // Maximum warmth . Click the field to rebind; default ⌥⌘T.
+            VStack(alignment: .leading, spacing: 12) {
+                SectionLabel("Reveal True Color")
+                Text("Instantly see your screen's true colors — bound to a keyboard shortcut.")
+                    .font(Theme.Typography.ui(12))
+                    .foregroundStyle(Theme.Color.textMuted)
+
+                // The shortcut as a clear, labelled liquid-glass input — mirrors the Schedule "Location"
+                // field so it's obvious you're setting a keyboard shortcut, not a bare pill
+                // tucked in the corner. The recorder sits on the right; the whole row reads as a field.
+                HStack(spacing: 10) {
+                    Image(systemName: "keyboard")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(Theme.Color.accentText)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text("Keyboard shortcut")
+                            .font(Theme.Typography.ui(12.5, weight: .medium))
+                            .foregroundStyle(Theme.Color.textPrimary)
+                        Text("Click to record — default ⌥⌘T")
+                            .font(Theme.Typography.ui(11))
+                            .foregroundStyle(Theme.Color.textFaint)
+                    }
+                    Spacer()
+                    RevealShortcutRecorder()
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .glassSurface(.frost, cornerRadius: Theme.Radius.control)
+                .overlay(
+                    RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
+                        .strokeBorder(.white.opacity(0.08), lineWidth: 1)
+                )
+
+                // Hold vs Toggle — on-brand glass switcher.
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack {
+                        BrandSegmentedControl(
+                            options: RevealMode.allCases,
+                            selection: Binding(get: { model.revealMode }, set: { model.setRevealMode($0) }),
+                            label: { $0 == .hold ? "Hold" : "Toggle" }
+                        )
+                        .frame(width: 200)
+                        Spacer()
+                    }
+                    Text(model.revealMode == .hold
+                         ? "Hold the shortcut to reveal true color; release to ease warmth back."
+                         : "Press the shortcut to toggle warming off/on.")
+                        .font(Theme.Typography.ui(12))
+                        .foregroundStyle(Theme.Color.textMuted)
+                }
+                .padding(.top, 2)
+            }
+            DividerLine()
+            ExcludedAppsControl(model: model)
+
+            if model.state.isEnabled {
+                DividerLine()
+                // Emergency reset, relocated from the Displays page: the forceful gamma/DDC
+                // restore kept as a quiet safety net without cluttering the main Displays view.
+                Button(role: .destructive) {
+                    model.setEnabled(false)
+                    model.restoreAllDisplays()
+                } label: {
+                    let multiple = model.state.displays.count > 1
+                    Label(multiple ? "Restore all displays to True Color" : "Restore display to True Color", systemImage: "arrow.counterclockwise")
+                }
+                .buttonStyle(.liquidGlass)
+            }
+        }
+    }
+}
+
+// MARK: - Excluded apps (suspend-while-frontmost picker)
+
+/// Settings → Advanced → Excluded apps. While one of these apps is the frontmost app, Abendrot
+/// suspends warming across all displays (true color) — for color-critical work. The list is the
+/// observed `model.excludedApps`; rows resolve a friendly name + icon from the bundle id, and "Add
+/// app…" picks an `.app` via `NSOpenPanel` (the app is not sandboxed, so no entitlement is needed).
+private struct ExcludedAppsControl: View {
+    @ObservedObject var model: AppModel
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var showsFocusCue = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 9) {
+            SectionLabel("Excluded apps")
+            Text("Abendrot pauses warming (shows true color) while one of these apps is frontmost — for color-critical work.")
+                .font(Theme.Typography.ui(12))
+                .foregroundStyle(Theme.Color.textMuted)
+
+            if model.excludedApps.isEmpty {
+                Text("None — add an app below.")
+                    .font(Theme.Typography.ui(11.5))
+                    .foregroundStyle(Theme.Color.textFaint)
+            } else {
+                VStack(spacing: 6) {
+                    ForEach(model.excludedApps.sorted(), id: \.self) { bundleID in
+                        ExcludedAppRow(bundleID: bundleID) {
+                            model.removeExcludedApp(bundleID)
+                        }
+                    }
+                }
+            }
+
+            Button {
+                addApp()
+            } label: {
+                Label("Add app…", systemImage: "plus")
+            }
+            .buttonStyle(.liquidGlass)
+            .padding(.top, 2)
+        }
+        .background(focusCueFill)
+        .overlay(focusCueStroke)
+        .task(id: model.excludedAppsFocusRequest) {
+            guard let request = model.excludedAppsFocusRequest else { return }
+            await runFocusCue(request)
+        }
+    }
+
+    private var focusCueFill: some View {
+        RoundedRectangle(cornerRadius: Theme.Radius.control + 4, style: .continuous)
+            .fill(Theme.Color.accent.opacity(0.12))
+            .opacity(showsFocusCue ? 1 : 0)
+            .padding(-10)
+    }
+
+    private var focusCueStroke: some View {
+        RoundedRectangle(cornerRadius: Theme.Radius.control + 4, style: .continuous)
+            .stroke(Theme.Color.accent.opacity(0.7), lineWidth: 1)
+            .shadow(color: Theme.Color.accent.opacity(0.45), radius: 12)
+            .opacity(showsFocusCue ? 1 : 0)
+            .padding(-10)
+    }
+
+    @MainActor
+    private func runFocusCue(_ request: UUID) async {
+        if showsFocusCue {
+            withAnimation(nil) { showsFocusCue = false }
+            await Task.yield()
+        }
+        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.18)) {
+            showsFocusCue = true
+        }
+        do {
+            try await Task.sleep(nanoseconds: 700_000_000)
+        } catch {
+            return
+        }
+        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.42)) {
+            showsFocusCue = false
+        }
+        do {
+            try await Task.sleep(nanoseconds: reduceMotion ? 0 : 420_000_000)
+        } catch {
+            return
+        }
+        if model.excludedAppsFocusRequest == request {
+            model.excludedAppsFocusRequest = nil
+        }
+    }
+
+    /// Pick an application bundle and add its bundle id to the exclusion set. In the App Store
+    /// build, the Powerbox grants this one selection read-only access through the user-selected-file
+    /// entitlement; the direct build remains unsandboxed.
+    private func addApp() {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.application]
+        panel.directoryURL = URL(fileURLWithPath: "/Applications")
+        panel.canChooseDirectories = false
+        panel.canChooseFiles = true
+        panel.allowsMultipleSelection = false
+        guard panel.runModal() == .OK, let url = panel.url,
+              let id = Bundle(url: url)?.bundleIdentifier else { return }
+        model.addExcludedApp(id)
+    }
+}
+
+/// One excluded-app row: the app's icon + friendly name (resolved from the bundle id, falling back to
+/// the raw id when the app can't be located), and a ✕ to remove it.
+private struct ExcludedAppRow: View {
+    let bundleID: String
+    let onRemove: () -> Void
+
+    var body: some View {
+        HStack(spacing: 8) {
+            if let icon = resolved.icon {
+                Image(nsImage: icon)
+                    .resizable()
+                    .frame(width: 16, height: 16)
+            } else {
+                Image(systemName: "app.dashed")
+                    .font(.system(size: 13))
+                    .foregroundStyle(Theme.Color.textFaint)
+                    .frame(width: 16, height: 16)
+            }
+            Text(resolved.name)
+                .font(Theme.Typography.ui(12.5))
+                .foregroundStyle(Theme.Color.textPrimary)
+            Spacer()
+            Button(action: onRemove) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 9, weight: .semibold))
+                    .foregroundStyle(Theme.Color.textMuted)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Remove \(resolved.name) from excluded apps")
+        }
+        .padding(.vertical, 6)
+        .padding(.horizontal, 10)
+        .background(Theme.Color.line.opacity(0.4),
+                    in: RoundedRectangle(cornerRadius: Theme.Radius.control - 1, style: .continuous))
+    }
+
+    /// Resolve a display name + icon from the bundle id via LaunchServices. Falls back to the raw
+    /// bundle id and no icon when the app isn't installed / can't be located.
+    private var resolved: (name: String, icon: NSImage?) {
+        guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) else {
+            return (bundleID, nil)
+        }
+        let name = FileManager.default.displayName(atPath: url.path)
+        // Drop a trailing ".app" the display name can carry when the Finder localization is absent.
+        let trimmed = name.hasSuffix(".app") ? String(name.dropLast(4)) : name
+        return (trimmed, NSWorkspace.shared.icon(forFile: url.path))
+    }
+}

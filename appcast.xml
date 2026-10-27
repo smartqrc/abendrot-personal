@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0"
+     xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle"
+     xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>Abendrot</title>
+    <link>https://raw.githubusercontent.com/matthewrball/abendrot/main/appcast.xml</link>
+    <description>Most recent changes for Abendrot.</description>
+    <language>en</language>
+    <!-- release.sh inserts new <item> elements directly below this line. -->
+    <item>
+      <title>Abendrot 1.1.5</title>
+      <pubDate>Mon, 19 Oct 2026 18:13:58 +0000</pubDate>
+      <sparkle:version>18</sparkle:version>
+      <sparkle:shortVersionString>1.1.5</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>12.0.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/matthewrball/abendrot/releases/download/v1.1.5/Abendrot-1.1.5.dmg"
+                 length="9350650"
+                 type="application/octet-stream"
+                 sparkle:edSignature="cC2T13yPWYMUbZBa5WjsJqdUhWTV3JldcWGgisV26vA8TWBeISv2c2EXK/nEsGw6u7r74SQSzJ9x26GgzXPJDw==" />
+    </item>
+    <item>
+      <title>Abendrot 1.1.4</title>
+      <pubDate>Fri, 16 Oct 2026 11:38:21 +0000</pubDate>
+      <sparkle:version>17</sparkle:version>
+      <sparkle:shortVersionString>1.1.4</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>12.0.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/matthewrball/abendrot/releases/download/v1.1.4/Abendrot-1.1.4.dmg"
+                 length="9249546"
+                 type="application/octet-stream"
+                 sparkle:edSignature="DnS55Myd8uWODXQj2UyRUgJ8rtBdxH8bH/b7aodk6XhNqhPlDE2c2rVprn+ESA/VGxzxiUUETIwDZCfqDSTsBg==" />
+    </item>
+    <item>
+      <title>Abendrot 1.1.3</title>
+      <pubDate>Thu, 08 Oct 2026 14:42:30 +0000</pubDate>
+      <sparkle:version>16</sparkle:version>
+      <sparkle:shortVersionString>1.1.3</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>12.0.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/matthewrball/abendrot/releases/download/v1.1.3/Abendrot-1.1.3.dmg"
+                 length="9264526"
+                 type="application/octet-stream"
+                 sparkle:edSignature="8h5fVpkSC63c8eCgTeasvzhBm0MTNAxwNd+2QYtu7xDUmZbwet9kHAo0Goi/2b6X+jjycruJGWaXcCPSUncvAg==" />
+    </item>
+    <item>
+      <title>Abendrot 1.1.2</title>
+      <pubDate>Thu, 24 Sep 2026 15:47:56 +0000</pubDate>
+      <sparkle:version>15</sparkle:version>
+      <sparkle:shortVersionString>1.1.2</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>12.0.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/matthewrball/abendrot/releases/download/v1.1.2/Abendrot-1.1.2.dmg"
+                 length="9263130"
+                 type="application/octet-stream"
+                 sparkle:edSignature="/CA/pu7/GEvfbwo0hYPXxa7dRCttoxVLU+bqAvYJ1GecMFWj70luKMpgtcmINh7BVVzXjQ/am/33LsHmwu9SCg==" />
+    </item>
+    <item>
+      <title>Abendrot 1.1.1</title>
+      <pubDate>Fri, 04 Sep 2026 05:38:56 +0000</pubDate>
+      <sparkle:version>14</sparkle:version>
+      <sparkle:shortVersionString>1.1.1</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>12.0.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/matthewrball/abendrot/releases/download/v1.1.1/Abendrot-1.1.1.dmg"
+                 length="9265516"
+                 type="application/octet-stream"
+                 sparkle:edSignature="ilJsnOdKoGz/oKDzddUSib0uaKbJDfaikaO7aZRR2f/Bqvce8h946Ygl5Em8kaMGfa9gCBGYgZmprnKQykwrCA==" />
+    </item>
+    <item>
+      <title>Abendrot 1.1.0</title>
+      <pubDate>Sat, 22 Aug 2026 05:45:30 +0000</pubDate>
+      <sparkle:version>13</sparkle:version>
+      <sparkle:shortVersionString>1.1.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/matthewrball/abendrot/releases/download/v1.1.0/Abendrot-1.1.0.dmg"
+                 length="9319470"
+                 type="application/octet-stream"
+                 sparkle:edSignature="TwjiknkjV6LvdBEX3T6vfattRvnu1Fea8C9TzhxuegB2xvuMOvjfXa25SmLKp4i/Jf3COFkd6L0UAQeBsUPgDw==" />
+    </item>
+    <item>
+      <title>Abendrot 1.0.9</title>
+      <pubDate>Fri, 21 Aug 2026 05:06:34 +0000</pubDate>
+      <sparkle:version>11</sparkle:version>
+      <sparkle:shortVersionString>1.0.9</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/matthewrball/abendrot/releases/download/v1.0.9/Abendrot-1.0.9.dmg"
+                 length="9319246"
+                 type="application/octet-stream"
+                 sparkle:edSignature="1OmFelj8FK3HT2FvY13Uw76mpDmAOHsey9ckoVsS374MZ504BRjFB4FKOd3iC1m6gRcxur5SzLV8Nu3mx/L2AQ==" />
+    </item>
+    <item>
+      <title>Abendrot 1.0.8</title>
+      <pubDate>Fri, 14 Aug 2026 09:04:23 +0000</pubDate>
+      <sparkle:version>10</sparkle:version>
+      <sparkle:shortVersionString>1.0.8</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/matthewrball/abendrot/releases/download/v1.0.8/Abendrot-1.0.8.dmg"
+                 length="9319846"
+                 type="application/octet-stream"
+                 sparkle:edSignature="LJNGRtdRF3LP5M7sZjpfLvSqfVIOQl8iRTajRx7yrUdebseDf8vscOqqfEcfzlZU4Of0w6Tc1kw/CR9063vbBg==" />
+    </item>
+    <item>
+      <title>Abendrot 1.0.7</title>
+      <pubDate>Fri, 14 Aug 2026 06:16:03 +0000</pubDate>
+      <sparkle:version>9</sparkle:version>
+      <sparkle:shortVersionString>1.0.7</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/matthewrball/abendrot/releases/download/v1.0.7/Abendrot-1.0.7.dmg"
+                 length="9319719"
+                 type="application/octet-stream"
+                 sparkle:edSignature="UB3C7ywPlEujxe6GAQ/n+Uv0UoMqRLmyyHzWtXfiAAMtm31JZNZZMb+zC7FqMptlzXfBc6WzZgT3QgqhtiwvCA==" />
+    </item>
+    <item>
+      <title>Abendrot 1.0.6</title>
+      <pubDate>Thu, 13 Aug 2026 03:30:03 +0000</pubDate>
+      <sparkle:version>8</sparkle:version>
+      <sparkle:shortVersionString>1.0.6</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/matthewrball/abendrot/releases/download/v1.0.6/Abendrot-1.0.6.dmg"
+                 length="9318808"
+                 type="application/octet-stream"
+                 sparkle:edSignature="8bDS/dJIsUKgrLPmiGQaRZSXE3uRICSX3+7d0DaSXsD8XJLademTgILKMPtBVnWySpkZ9/J7r9JoGitPdh/7Dw==" />
+    </item>
+    <item>
+      <title>Abendrot 1.0.5</title>
+      <pubDate>Fri, 31 Jul 2026 05:55:14 +0000</pubDate>
+      <sparkle:version>7</sparkle:version>
+      <sparkle:shortVersionString>1.0.5</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/matthewrball/abendrot/releases/download/v1.0.5/Abendrot-1.0.5.dmg"
+                 length="9318763"
+                 type="application/octet-stream"
+                 sparkle:edSignature="GQfy0vShN0v6J4RIYf1Ou/1fMoF21bnQcPA1b5R5pvKMz8jnk5ki1AS9AmNvz7n1tk0oCZXxJSN5SwPlognKAQ==" />
+    </item>
+    <item>
+      <title>Abendrot 1.0.4</title>
+      <pubDate>Thu, 30 Jul 2026 12:14:17 +0000</pubDate>
+      <sparkle:version>6</sparkle:version>
+      <sparkle:shortVersionString>1.0.4</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/matthewrball/abendrot/releases/download/v1.0.4/Abendrot-1.0.4.dmg"
+                 length="9318505"
+                 type="application/octet-stream"
+                 sparkle:edSignature="5sybUN76PEK3xZ9RcY5k9qMflSI2/44sEOxCx0FnzElNcZvC4qmjmoNeJ6kVZnRXVls3FoG6BWibou0TIts6BQ==" />
+    </item>
+    <item>
+      <title>Abendrot 1.0.3</title>
+      <pubDate>Thu, 30 Jul 2026 11:18:02 +0000</pubDate>
+      <sparkle:version>5</sparkle:version>
+      <sparkle:shortVersionString>1.0.3</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/matthewrball/abendrot/releases/download/v1.0.3/Abendrot-1.0.3.dmg"
+                 length="9314906"
+                 type="application/octet-stream"
+                 sparkle:edSignature="Q9OrjMBigpaxeIHdSTzgGooAf9nIFz0ctoM/ph2rFqIUiLhFTAoEyWk6KhE4RIquCElfyLRA9mCin5BgruYoDQ==" />
+    </item>
+    <item>
+      <title>Abendrot 1.0.2</title>
+      <pubDate>Wed, 29 Jul 2026 03:02:50 +0000</pubDate>
+      <sparkle:version>4</sparkle:version>
+      <sparkle:shortVersionString>1.0.2</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/matthewrball/abendrot/releases/download/v1.0.2/Abendrot-1.0.2.dmg"
+                 length="9313459"
+                 type="application/octet-stream"
+                 sparkle:edSignature="sgC2z+1efQOHaCXadNGA3cD5gj668/B2QDw6ZTXIYQFLXNYqdQtWnrFIj7jQwiQ4k5s9yj7b8y9R15Bmt0dpDg==" />
+    </item>
+    <item>
+      <title>Abendrot 1.0.1</title>
+      <pubDate>Tue, 28 Jul 2026 23:27:46 +0000</pubDate>
+      <sparkle:version>3</sparkle:version>
+      <sparkle:shortVersionString>1.0.1</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/matthewrball/abendrot/releases/download/v1.0.1/Abendrot-1.0.1.dmg"
+                 length="9311947"
+                 type="application/octet-stream"
+                 sparkle:edSignature="2mdjigGeEdK6+Z11HEdtk5rUzddJhvi1R0olUSR46d/iZaKEJBoEcnJ8cfYp45XuhWPT1CFV7fuxDKUCKcTNDA==" />
+    </item>
+    <item>
+      <title>Abendrot 1.0.0</title>
+      <pubDate>Tue, 28 Jul 2026 17:46:35 +0000</pubDate>
+      <sparkle:version>2</sparkle:version>
+      <sparkle:shortVersionString>1.0.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0.0</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/matthewrball/abendrot/releases/download/v1.0.0/Abendrot-1.0.0.dmg"
+                 length="10800533"
+                 type="application/octet-stream"
+                 sparkle:edSignature="FL2drQ3+ktSd4SGVF6inVZhMdzJiexKKgDY23mgN00zkFR3tDYfyrtoXbn0N0mVEZFOaEfe1cc8hEw0yni9lCw==" />
+    </item>
+  </channel>
+</rss>

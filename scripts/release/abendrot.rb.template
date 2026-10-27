@@ -1,0 +1,59 @@
+# Homebrew cask SKELETON for Abendrot.
+#
+# This is a TEMPLATE (.rb.template) so it is never accidentally treated as a live
+# cask. Publish the real cask only AFTER the Sparkle appcast + DMG are coherent
+# and at least one release is notarized+stapled (the Homebrew cask publishes only
+# after appcast+DMG are coherent).
+#
+# Distribution: own tap first (homebrew-tap) -> later submit to
+# homebrew-cask central. Binaries are hosted on GitHub Releases,
+# so the `url` uses versioned GitHub-release download URLs.
+#
+# Cask requirements: livecheck, auto_updates true, zap, SHA256,
+# versioned URLs. The:no_check sha256 is a PLACEHOLDER — replace with the real
+# DMG SHA256 (plain-dmg.sh / pretty-dmg.sh print it) at publish time, or compute
+# per-version. `auto_updates true` is correct because Sparkle self-updates the app.
+#
+cask "abendrot" do
+  version "1.0.0"                       # PLACEHOLDER — sync to the GitHub release tag (vX.Y.Z)
+  sha256 :no_check                      # PLACEHOLDER — set real DMG SHA256 before publishing
+
+  url "https://github.com/matthewrball/abendrot/releases/download/v#{version}/Abendrot-#{version}.dmg"
+  name "Abendrot"
+  desc "Free, open-source per-display screen-warmth app"
+  homepage "https://abendrot.app/"
+
+  # Read the latest version straight from the Sparkle appcast (single source of truth).
+  livecheck do
+    url "https://raw.githubusercontent.com/matthewrball/abendrot/main/appcast.xml"
+    strategy :sparkle, &:short_version
+  end
+
+  # Sparkle drives in-app updates; declare so brew defers to the app.
+  auto_updates true
+
+  # macOS 12 "Monterey" deployment-target floor.
+  depends_on macos: :monterey
+
+  app "Abendrot.app"
+
+  # The `abendrot` CLI ships INSIDE the app bundle (Contents/Helpers/abendrot) and is
+  # symlinked onto PATH so `abendrot set warmth 0.8` works after `brew install`. The
+  # helper is signed inside-out as part of the notarized bundle, so a
+  # quarantined install assesses it under the app's ticket rather than separately.
+  # NOTE: Helpers/ (not MacOS/) avoids a case-insensitive collision with the app's own
+  # `Abendrot` executable — see scripts/release/release.sh embed_cli_helper().
+  binary "#{appdir}/Abendrot.app/Contents/Helpers/abendrot"
+
+  # Clean uninstall: remove app + all support/state Abendrot writes.
+  # Stable bundle id used by the app, preferences, and release guards.
+  uninstall quit: "app.abendrot.Abendrot"
+
+  zap trash: [
+    "~/Library/Application Support/Abendrot",
+    "~/Library/Caches/app.abendrot.Abendrot",
+    "~/Library/HTTPStorages/app.abendrot.Abendrot",
+    "~/Library/Preferences/app.abendrot.Abendrot.plist",
+    "~/Library/Saved Application State/app.abendrot.Abendrot.savedState",
+  ]
+end
