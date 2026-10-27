@@ -114,7 +114,7 @@ public actor FileDDCSnapshotStore: DDCSnapshotStore {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
             ?? URL(fileURLWithPath: NSTemporaryDirectory())
         return base
-            .appendingPathComponent("Abendrot", isDirectory: true)
+            .appendingPathComponent("Abendrot Personal", isDirectory: true)
             .appendingPathComponent("ddc-snapshots.json")
     }
 

@@ -60,6 +60,11 @@ final class AppModel: ObservableObject {
     /// Manual Sunset location override. nil = Auto from system time zone; no permission or network.
     @Published var userCoordinate: TimeZoneCoordinates.Coordinate? = nil
 
+    /// Return to true colour while any app is fullscreen (Settings → Advanced). Purely a window-geometry
+    /// observation — nothing is written back to warmth or schedule, so leaving fullscreen restores the
+    /// current mode by itself. Persisted; restored in `applyPersistedState()`.
+    @Published var pauseInFullscreen: Bool = true
+
     private var sunsetMaximumWarmth = WarmthLevel(strength: 0.7)
     private var manualWarmth = WarmthLevel(strength: 1.0)
     private var manualCozyWarmth = WarmthLevel(strength: 1.0)
@@ -146,6 +151,9 @@ final class AppModel: ObservableObject {
     private let engine: WarmthEngine?
     private var hotkeyService: HotkeyService?
     private var frontmostMonitor: FrontmostAppMonitor?
+    /// Reports which displays a foreground fullscreen window covers, so the engine can neutralise just
+    /// those. Only observed while `pauseInFullscreen` is on.
+    private var fullscreenMonitor: FullscreenMonitor?
     private var observationTask: Task<Void, Never>?
 
     // MARK: Control surface
@@ -178,6 +186,7 @@ final class AppModel: ObservableObject {
         self.engine = engine
         self.state = WarmthState(scheduleMode: configuration.defaultScheduleMode)
         self.frontmostMonitor = FrontmostAppMonitor(engine: engine)
+        self.fullscreenMonitor = FullscreenMonitor(engine: engine)
         self.hotkeyService = HotkeyService(engine: engine) { [weak self] in
             guard let self else { return }
             self.setEnabled(!self.state.isEnabled)
@@ -189,6 +198,7 @@ final class AppModel: ObservableObject {
         self.engine = nil
         self.hotkeyService = nil
         self.frontmostMonitor = nil
+        self.fullscreenMonitor = nil
         self.state = previewState
         self.sunsetMaximumWarmth = previewState.globalWarmth
         self.manualWarmth = previewState.globalWarmth
@@ -204,6 +214,9 @@ final class AppModel: ObservableObject {
         // Seeds the current frontmost app immediately. If that `setFrontmostApp` lands before the
         // `engine.start()` Task below, it's harmless — the engine recomputes suspend wholesale each pass.
         frontmostMonitor?.start()
+        // Fullscreen suspend. Kicked off here so a fresh install (no persisted key, default = on) starts
+        // observing; the restore in `applyPersistedState()` lands after this, so a persisted "off" wins.
+        fullscreenMonitor?.start()
         observationTask = Task { [weak self] in
             for await snapshot in await engine.stateUpdates() {
                 self?.applyEngineSnapshot(snapshot)
@@ -474,6 +487,11 @@ final class AppModel: ObservableObject {
             }
         }
 
+        // Return to true colour while an app is fullscreen. Fresh install keeps the default (on).
+        if let on = cfPrefBool(Self.pauseInFullscreenKey) {
+            setPauseInFullscreen(on, userInitiated: false)   // restore must not play the toggle tone
+        }
+
         if let data = cfPrefData(PreferenceKey.displaySettings) {
             if let decoded = ControlValidation.decodedPersistedDisplaySettings(from: data) {
                 persistedDisplaySettings = decoded
@@ -733,6 +751,7 @@ final class AppModel: ObservableObject {
             self.controlObserver = nil
         }
         #endif
+        fullscreenMonitor?.stop()
         frontmostMonitor?.stop()
         await engine?.shutdown()
         #if !APP_STORE
@@ -897,6 +916,9 @@ final class AppModel: ObservableObject {
     static let lastWarmSunsetDayKey = "stats.lastWarmSunsetDay"
     static let statsEnabledKey = "stats.enabled"
     static let hasCompletedOnboardingKey = "hasCompletedOnboarding"
+    /// Fullscreen suspend is app-side behaviour, not engine state, so this key stays local too — the
+    /// CLI/`state.json` contract and `schemaVersion` are untouched.
+    static let pauseInFullscreenKey = "pauseInFullscreen"
 
     func setWarmestPoint(_ kelvin: Kelvin) {
         // Optimistic UI so the Kelvin readout updates immediately, then persist + tell the engine.
@@ -1143,6 +1165,16 @@ final class AppModel: ObservableObject {
         statsEnabled = on
         UserDefaults.standard.set(on, forKey: Self.statsEnabledKey)
         updateWarmingStats()   // off → closes any open session; on → resumes if currently warming
+        if userInitiated, changed { playSoftToggleTone(on: on) }
+    }
+
+    /// Return to true colour while any app is fullscreen. Stopping the monitor also clears any suspend
+    /// it had applied, so turning this off warms the display back up immediately.
+    func setPauseInFullscreen(_ on: Bool, userInitiated: Bool = true) {
+        let changed = on != pauseInFullscreen
+        pauseInFullscreen = on
+        UserDefaults.standard.set(on, forKey: Self.pauseInFullscreenKey)
+        if on { fullscreenMonitor?.start() } else { fullscreenMonitor?.stop() }
         if userInitiated, changed { playSoftToggleTone(on: on) }
     }
 

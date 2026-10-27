@@ -471,6 +471,24 @@ public actor WarmthEngine {
         return suspended.contains(id.currentDisplayID)
     }
 
+    /// The app-side fullscreen bridge (`FullscreenMonitor`) reports the set of displays currently
+    /// covered edge-to-edge by a foreground fullscreen window — computed permission-free from window
+    /// *geometry* alone. Those displays drop to true colour (the same `.off` → `reset()` path an
+    /// excluded frontmost app uses) and come back to the schedule's resolved warmth the moment the
+    /// fullscreen window goes away.
+    ///
+    /// This is a THIRD, independent suspend reason alongside hold-to-reveal and per-app exclusion, so
+    /// the three compose: whichever is active neutralises the display, and clearing one leaves the
+    /// others honoured. Deliberately not a `WarmthState` field — the suspend is derived state, and
+    /// nothing here is ever written back to `UserDefaults`, so the user's warmth/schedule is untouched
+    /// and restores itself on exit. Change-gated: an identical set is a no-op, so a polling caller
+    /// costs nothing while the fullscreen state is steady.
+    public func setFullscreenDisplays(_ displayIDs: Set<CGDirectDisplayID>) async {
+        guard displayIDs != box.fullscreenDisplayIDs else { return }
+        box.fullscreenDisplayIDs = displayIDs
+        await reapply()
+    }
+
     // MARK: ── Safety ────────────────────────────────────────────────────────────
 
     /// Emergency "Restore Displays": neutral gamma + overlay teardown + DDC native-state
@@ -827,9 +845,12 @@ public actor WarmthEngine {
                 override: display.preferredMethod,
                 privateAPIsEnabled: privateOn
             )
-            // This display is on only when the global gates pass AND it is not currently suspended by
-            // an excluded frontmost app sitting on it (per-display, so other monitors stay warm).
-            let displayOn = engineOn && !isDisplaySuspendedByExclusion(id)
+            // This display is on only when the global gates pass AND it is not currently suspended —
+            // either by an excluded frontmost app sitting on it (per-display, so other monitors stay
+            // warm) or because a foreground fullscreen window covers it end to end.
+            let displayOn = engineOn
+                && !isDisplaySuspendedByExclusion(id)
+                && !box.fullscreenDisplayIDs.contains(id.currentDisplayID)
             // A display uses its OWN warmth only when overridden ("Custom warmth"); otherwise it
             // follows the global/schedule target. (Replaces the old max-boost model.)
             let effective = displayOn ? (display.warmthOverridden ? display.warmth : decision.target) : .off
@@ -1064,6 +1085,11 @@ private struct WarmthStateBox {
     /// displays (whole-app suspend / single-display fallback, == legacy behaviour); a set = only those
     /// monitors. Empty set suspends nothing. Engine-private.
     var suspendedDisplayIDs: Set<CGDirectDisplayID>? = nil
+    /// The `CGDirectDisplayID`s currently covered edge to edge by a foreground fullscreen window,
+    /// reported by the app-side `FullscreenMonitor`. Empty set = nothing fullscreen. An independent
+    /// suspend reason that composes with `isExcludedAppFrontmost` — never persisted, so leaving
+    /// fullscreen restores the schedule's warmth by itself. Engine-private.
+    var fullscreenDisplayIDs: Set<CGDirectDisplayID> = []
 }
 
 // MARK: - NoopBackend (test-support neutral layer)

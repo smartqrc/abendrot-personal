@@ -1,0 +1,151 @@
+name: build-personal
+
+# Personal fork build pipeline.
+#
+# Why this exists: this machine has only Command Line Tools (Swift 5.4 / macOS 11.3 SDK), while the
+# app needs Swift 6 + the macOS 26 SDK (Liquid Glass `glassEffect`, unconditional). So the app is
+# compiled on a hosted macOS runner and the .app is downloaded as an artifact — no local Xcode.
+#
+# No secrets are required: the build is unsigned (`CODE_SIGNING_ALLOWED=NO`) and ad-hoc signed for
+# local use. Not notarized, not for distribution.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  APP_SCHEME: Abendrot
+  APP_NAME: Abendrot
+  ARTIFACT_PREFIX: Abendrot-Personal
+
+jobs:
+  # Headless engine tests. Runs the whole WarmthKit package (fake-backed backends, no display access).
+  test:
+    name: WarmthKit tests
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select newest installed Xcode
+        run: |
+          set -euo pipefail
+          latest=$(ls -d /Applications/Xcode_2*.app 2>/dev/null | sort -V | tail -1 || true)
+          if [ -n "${latest}" ]; then
+            echo "DEVELOPER_DIR=${latest}/Contents/Developer" >> "$GITHUB_ENV"
+            echo "Using ${latest}"
+          fi
+
+      - name: Toolchain
+        run: |
+          xcodebuild -version
+          swift --version
+          xcrun --sdk macosx --show-sdk-version
+
+      - name: swift test
+        working-directory: WarmthKit
+        run: swift test --parallel
+
+  # The actual product. Kept independent of `test` so a flaky test can never cost you a build.
+  build:
+    name: Build app
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select newest installed Xcode
+        run: |
+          set -euo pipefail
+          latest=$(ls -d /Applications/Xcode_2*.app 2>/dev/null | sort -V | tail -1 || true)
+          if [ -n "${latest}" ]; then
+            echo "DEVELOPER_DIR=${latest}/Contents/Developer" >> "$GITHUB_ENV"
+            echo "Using ${latest}"
+          fi
+
+      - name: Toolchain
+        run: |
+          xcodebuild -version
+          swift --version
+          xcrun --sdk macosx --show-sdk-version
+
+      - name: Install XcodeGen
+        run: |
+          set -euo pipefail
+          brew install xcodegen
+          xcodegen --version
+
+      - name: Generate Abendrot.xcodeproj from project.yml
+        run: |
+          set -euo pipefail
+          test -f project.yml || { echo "::error::project.yml missing"; exit 1; }
+          xcodegen generate --spec project.yml
+
+      - name: Build Abendrot.app (unsigned)
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project "${APP_SCHEME}.xcodeproj" \
+            -scheme "${APP_SCHEME}" \
+            -configuration Release \
+            -destination 'generic/platform=macOS' \
+            -derivedDataPath build/DerivedData \
+            -onlyUsePackageVersionsFromResolvedFile \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY="" \
+            ABENDROT_SOURCE_COMMIT="$GITHUB_SHA" \
+            build
+
+      - name: Ad-hoc sign for local use
+        run: |
+          set -uo pipefail
+          APP="build/DerivedData/Build/Products/Release/${APP_NAME}.app"
+          test -d "$APP" || { echo "::error::app bundle not produced"; exit 1; }
+          # Sign inside-out: bundled CLI, then nested frameworks (Sparkle ships XPC services), then the
+          # shell. Ad-hoc is enough to launch locally on Apple silicon; failures are reported, not fatal.
+          if [ -f "$APP/Contents/Helpers/abendrot" ]; then
+            codesign --force --sign - --identifier app.abendrot.personal.cli \
+              --options runtime "$APP/Contents/Helpers/abendrot" \
+              || echo "::warning::helper signing failed"
+          fi
+          if [ -d "$APP/Contents/Frameworks/Sparkle.framework" ]; then
+            codesign --force --deep --sign - --options runtime \
+              "$APP/Contents/Frameworks/Sparkle.framework" \
+              || echo "::warning::Sparkle signing failed"
+          fi
+          codesign --force --sign - --options runtime "$APP" || echo "::warning::app signing failed"
+          echo "--- verification ---"
+          codesign --verify --deep --strict --verbose=2 "$APP" || echo "::warning::verification reported issues"
+          codesign -dv --verbose=2 "$APP" 2>&1 | head -5
+          /usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$APP/Contents/Info.plist"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleName" "$APP/Contents/Info.plist"
+
+      - name: Package zip
+        run: |
+          set -euo pipefail
+          APP="build/DerivedData/Build/Products/Release/${APP_NAME}.app"
+          mkdir -p out
+          ZIP="out/${ARTIFACT_PREFIX}-${GITHUB_RUN_NUMBER}.zip"
+          ditto -c -k --keepParent "$APP" "$ZIP"
+          ls -lh "$ZIP"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: abendrot-personal-app
+          path: out/*.zip
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Summary
+        run: |
+          {
+            echo "### Abendrot Personal build ${GITHUB_RUN_NUMBER}"
+            echo ""
+            echo "Artifact: \`${ARTIFACT_PREFIX}-${GITHUB_RUN_NUMBER}.zip\`"
+            echo ""
+            echo "Install locally:"
+            echo '```sh'
+            echo 'unzip Abendrot-Personal-*.zip -d "$HOME/Applications/"'
+            echo 'codesign --force --deep --sign - --options runtime "$HOME/Applications/Abendrot.app"'
+            echo 'open "$HOME/Applications/Abendrot.app"'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

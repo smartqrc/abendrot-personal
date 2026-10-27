@@ -18,19 +18,22 @@ public enum AbendrotControl {
     public static let schemaVersion = 1
 
     /// The app's bundle identifier — also its CFPreferences application id (preference domain).
-    public static let appBundleID = "app.abendrot.Abendrot"
+    ///
+    /// PERSONAL FORK: changed from `app.abendrot.Abendrot` so this build can coexist with the official
+    /// release — separate preference domain, separate state file, separate status-bar agent.
+    public static let appBundleID = "app.abendrot.personal"
 
     /// CFPreferences applicationID == the app's bundle id (its preference-domain plist at
-    /// ~/Library/Preferences/app.abendrot.Abendrot.plist).
-    public static let preferenceDomain = "app.abendrot.Abendrot"
+    /// ~/Library/Preferences/app.abendrot.personal.plist).
+    public static let preferenceDomain = "app.abendrot.personal"
 
     /// DistributedNotification name: the app observes it, the CLI posts it. Same login session
     /// only — never `postToAllSessions`, which keeps the control surface inside the user's own
     /// session as a security boundary.
-    public static let settingsChangedNotification = "app.abendrot.settingsChanged"
+    public static let settingsChangedNotification = "app.abendrot.personal.settingsChanged"
 
     /// Sub-directory under ~/Library/Application Support that holds the live `state.json`.
-    public static let appSupportDirectoryName = "Abendrot"
+    public static let appSupportDirectoryName = "Abendrot Personal"
 
     /// Live control snapshot file name (the CLI reads it for `status` + ack).
     public static let stateFileName = "state.json"

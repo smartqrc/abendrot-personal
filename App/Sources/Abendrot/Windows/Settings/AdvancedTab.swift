@@ -8,7 +8,7 @@ struct AdvancedTab: View {
     @ObservedObject var model: AppModel
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
-            TabHeader(title: "Advanced", subtitle: "Maximum warmth, the reveal shortcut, and per-app exclusions.")
+            TabHeader(title: "Advanced", subtitle: "Maximum warmth, the reveal shortcut, fullscreen, and per-app exclusions.")
 
             CozyModeControl(model: model)
             DividerLine()
@@ -67,6 +67,28 @@ struct AdvancedTab: View {
                 .padding(.top, 2)
             }
             DividerLine()
+
+            // Return to true colour while any app is fullscreen. Geometry-only detection: no Screen
+            // Recording, no Accessibility. Only the fullscreen display is neutralised; other monitors
+            // keep the schedule's warmth.
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("Pause warmth in fullscreen")
+                        .font(Theme.Typography.ui(13))
+                        .foregroundStyle(Theme.Color.textPrimary)
+                    Spacer()
+                    Toggle("", isOn: pauseInFullscreenBinding)
+                        .labelsHidden()
+                        .toggleStyle(.switch)
+                        .tint(Theme.Color.accent)
+                        .accessibilityLabel("Pause warmth in fullscreen")
+                }
+                Text("When any app goes fullscreen, that display returns to true color until you leave fullscreen. Other displays stay warm.")
+                    .font(Theme.Typography.ui(12))
+                    .foregroundStyle(Theme.Color.textMuted)
+            }
+
+            DividerLine()
             ExcludedAppsControl(model: model)
 
             if model.state.isEnabled {
@@ -83,6 +105,15 @@ struct AdvancedTab: View {
                 .buttonStyle(.liquidGlass)
             }
         }
+    }
+
+    /// Guarded like every other settings toggle: no-op on an unchanged value, and the model owns
+    /// persistence + the confirmation tone.
+    private var pauseInFullscreenBinding: Binding<Bool> {
+        Binding(get: { model.pauseInFullscreen }, set: { newValue in
+            guard newValue != model.pauseInFullscreen else { return }
+            model.setPauseInFullscreen(newValue)
+        })
     }
 }
 

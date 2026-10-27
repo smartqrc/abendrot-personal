@@ -33,10 +33,11 @@ final class AbendrotControlTests: XCTestCase {
     }
 
     func testIdentityConstants() {
-        XCTAssertEqual(AbendrotControl.appBundleID, "app.abendrot.Abendrot")
-        XCTAssertEqual(AbendrotControl.preferenceDomain, "app.abendrot.Abendrot")
-        XCTAssertEqual(AbendrotControl.settingsChangedNotification, "app.abendrot.settingsChanged")
-        XCTAssertEqual(AbendrotControl.appSupportDirectoryName, "Abendrot")
+        // PERSONAL FORK: identity strings are namespaced so this build coexists with the official app.
+        XCTAssertEqual(AbendrotControl.appBundleID, "app.abendrot.personal")
+        XCTAssertEqual(AbendrotControl.preferenceDomain, "app.abendrot.personal")
+        XCTAssertEqual(AbendrotControl.settingsChangedNotification, "app.abendrot.personal.settingsChanged")
+        XCTAssertEqual(AbendrotControl.appSupportDirectoryName, "Abendrot Personal")
         XCTAssertEqual(AbendrotControl.stateFileName, "state.json")
     }
 

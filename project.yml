@@ -29,7 +29,10 @@ settings:
     SWIFT_VERSION: "6.0"
     SWIFT_STRICT_CONCURRENCY: complete
     MACOSX_DEPLOYMENT_TARGET: "12.0"
-    PRODUCT_BUNDLE_IDENTIFIER: app.abendrot.Abendrot
+    # PERSONAL FORK: a distinct identifier so this build and the official release can coexist (own
+    # preference domain, own state.json, own status-bar agent). Must stay in sync with
+    # `AbendrotControl.appBundleID` / `.preferenceDomain` in the WarmthKit package.
+    PRODUCT_BUNDLE_IDENTIFIER: app.abendrot.personal
     MARKETING_VERSION: "1.1.5"
     CURRENT_PROJECT_VERSION: "18"
     # Release builds override this with `git rev-parse HEAD`. release.sh refuses
@@ -77,25 +80,23 @@ targets:
       properties:
         # LSUIElement = agent app: no Dock icon, no Cmd-Tab.
         LSUIElement: true
-        CFBundleName: Abendrot
-        CFBundleDisplayName: Abendrot
+        CFBundleName: Abendrot Personal
+        CFBundleDisplayName: Abendrot Personal
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         AbendrotSourceCommit: "$(ABENDROT_SOURCE_COMMIT)"
         LSMinimumSystemVersion: "12.0"
-        NSHumanReadableCopyright: "Abendrot. Warm into the evening."
+        NSHumanReadableCopyright: "Abendrot Personal. Warm into the evening."
         # No camera/mic/location/accessibility usage strings — core function needs no
         # permissions. A notification usage prompt is requested at
-        # runtime during onboarding, not declared as an always-on permission.
+        # runtime during onboarding, not declared as an always-on permission. Fullscreen detection is
+        # window-geometry only, so it adds no permission either.
         #
-        # Sparkle auto-update wiring (the release runbook — single signing
-        # authority). The appcast lives at the raw GitHub URL; Sparkle reads it to
-        # discover updates.
-        SUFeedURL: "https://raw.githubusercontent.com/matthewrball/abendrot/main/appcast.xml"
-        # Let Sparkle schedule checks at most once every 24 hours and download in
-        # the background by default. User opt-outs persist; manual checks remain.
-        SUEnableAutomaticChecks: true
-        SUAutomaticallyUpdate: true
+        # PERSONAL FORK: Sparkle auto-update is DISABLED and the feed is a dead URL. The stock feed
+        # points at the upstream appcast, which would happily replace this build with the official one.
+        SUFeedURL: "https://example.invalid/abendrot-personal/appcast.xml"
+        SUEnableAutomaticChecks: false
+        SUAutomaticallyUpdate: false
         SUScheduledCheckInterval: 86400
         SUVerifyUpdateBeforeExtraction: true
         # EdDSA public key for the Sparkle signing key whose private half lives only
@@ -139,8 +140,8 @@ targets:
       path: App/Resources/Info-AppStore.plist
       properties:
         LSUIElement: true
-        CFBundleName: Abendrot
-        CFBundleDisplayName: Abendrot
+        CFBundleName: Abendrot Personal
+        CFBundleDisplayName: Abendrot Personal
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         AbendrotSourceCommit: "$(ABENDROT_SOURCE_COMMIT)"
@@ -151,7 +152,7 @@ targets:
     settings:
       base:
         PRODUCT_NAME: Abendrot
-        PRODUCT_BUNDLE_IDENTIFIER: app.abendrot.Abendrot
+        PRODUCT_BUNDLE_IDENTIFIER: app.abendrot.personal.appstore
         CODE_SIGN_STYLE: Automatic
         DEVELOPMENT_TEAM: XGFJEZS3MA
         CODE_SIGN_ENTITLEMENTS: App/Resources/AbendrotAppStore.entitlements
