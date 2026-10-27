@@ -487,6 +487,10 @@ public actor WarmthEngine {
         guard displayIDs != box.fullscreenDisplayIDs else { return }
         box.fullscreenDisplayIDs = displayIDs
         await reapply()
+        // Publish too: `appliedMethod` moves to `.off` on the suspended display, and the popover, the
+        // status-bar glyph, and the CLI's state.json all render from the published state. Reapplying
+        // without publishing left the UI and the snapshot claiming the display was still warm.
+        publish()
     }
 
     // MARK: ── Safety ────────────────────────────────────────────────────────────
