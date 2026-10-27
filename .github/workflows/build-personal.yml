@@ -102,17 +102,20 @@ jobs:
           test -d "$APP" || { echo "::error::app bundle not produced"; exit 1; }
           # Sign inside-out: bundled CLI, then nested frameworks (Sparkle ships XPC services), then the
           # shell. Ad-hoc is enough to launch locally on Apple silicon; failures are reported, not fatal.
+          # NOTE: no `--options runtime`. Hardened runtime enables library validation, which rejects
+          # the ad-hoc-signed Sparkle framework (no Team ID to match) and the app then dies in dyld
+          # with "different Team IDs". A personal build does not need the hardened runtime.
           if [ -f "$APP/Contents/Helpers/abendrot" ]; then
             codesign --force --sign - --identifier app.abendrot.personal.cli \
-              --options runtime "$APP/Contents/Helpers/abendrot" \
+              "$APP/Contents/Helpers/abendrot" \
               || echo "::warning::helper signing failed"
           fi
           if [ -d "$APP/Contents/Frameworks/Sparkle.framework" ]; then
-            codesign --force --deep --sign - --options runtime \
+            codesign --force --deep --sign - \
               "$APP/Contents/Frameworks/Sparkle.framework" \
               || echo "::warning::Sparkle signing failed"
           fi
-          codesign --force --sign - --options runtime "$APP" || echo "::warning::app signing failed"
+          codesign --force --sign - "$APP" || echo "::warning::app signing failed"
           echo "--- verification ---"
           codesign --verify --deep --strict --verbose=2 "$APP" || echo "::warning::verification reported issues"
           codesign -dv --verbose=2 "$APP" 2>&1 | head -5
@@ -145,7 +148,7 @@ jobs:
             echo "Install locally:"
             echo '```sh'
             echo 'unzip Abendrot-Personal-*.zip -d "$HOME/Applications/"'
-            echo 'codesign --force --deep --sign - --options runtime "$HOME/Applications/Abendrot.app"'
+            echo 'codesign --force --deep --sign - "$HOME/Applications/Abendrot.app"'
             echo 'open "$HOME/Applications/Abendrot.app"'
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
