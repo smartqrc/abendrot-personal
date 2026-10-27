@@ -93,7 +93,7 @@ public actor NativeColorFilterController {
                 directory: URL? = nil, onFailure: @escaping FailureHandler = { _ in }) {
         self.executable = executable
         self.directory = directory ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("Abendrot/NativeColorFilter", isDirectory: true)
+            .appendingPathComponent("Abendrot Personal/NativeColorFilter", isDirectory: true)
         self.onFailure = onFailure
     }
 
